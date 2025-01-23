@@ -36,7 +36,7 @@ export const uploadImage = actionClient
       return new Promise<UploadResult>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            upload_preset: process.env.CLOUDINARY_NAME,
+            upload_preset: "creative_studio",
             use_filename: true,
             unique_filename: false,
             filename_override: file.name,

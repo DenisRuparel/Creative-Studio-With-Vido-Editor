@@ -10,8 +10,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET,
 })
 
-const genRemoveSchema = z.object({
-  prompt: z.string(),
+const bgReplaceSchema = z.object({
+  prompt: z.string().optional(),
   activeImage: z.string(),
 })
 
@@ -27,18 +27,24 @@ async function checkImageProcessing(url: string) {
   }
 }
 
-export const genRemove = actionClient
-  .schema(genRemoveSchema)
+export const replaceBackground = actionClient
+  .schema(bgReplaceSchema)
   .action(async ({ parsedInput: { prompt, activeImage } }) => {
     const parts = activeImage.split("/upload/")
-    //https://res.cloudinary.com/demo/image/upload/e_gen_remove:prompt_fork/docs/avocado-salad.jpg
-    const removeUrl = `${parts[0]}/upload/e_gen_remove:${prompt}/${parts[1]}`
+    const bgReplaceUrl = prompt
+      ? `${
+          parts[0]
+        }/upload/e_gen_background_replace:prompt_${encodeURIComponent(
+          prompt
+        )}/${parts[1]}`
+      : `${parts[0]}/upload/e_gen_background_replace/${parts[1]}`
+
     // Poll the URL to check if the image is processed
     let isProcessed = false
     const maxAttempts = 20
     const delay = 1000 // 1 second
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      isProcessed = await checkImageProcessing(removeUrl)
+      isProcessed = await checkImageProcessing(bgReplaceUrl)
       if (isProcessed) {
         break
       }
@@ -48,6 +54,6 @@ export const genRemove = actionClient
     if (!isProcessed) {
       throw new Error("Image processing timed out")
     }
-    console.log(removeUrl)
-    return { success: removeUrl }
+    console.log(bgReplaceUrl)
+    return { success: bgReplaceUrl }
   })
