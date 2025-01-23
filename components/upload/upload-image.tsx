@@ -27,6 +27,13 @@ export default function UploadImage() {
     },
     onDrop: async (acceptedFiles, fileRejections) => {
       if (acceptedFiles.length) {
+        const file = acceptedFiles[0];
+    
+        if (file.size > 1048576) {
+          toast.error("Image size should not exceed 1 MB.");
+          return;
+        }
+
         const formData = new FormData()
         formData.append("image", acceptedFiles[0])
         //Generate Object url
