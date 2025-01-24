@@ -8,7 +8,7 @@ import { Label } from "../ui/label"
 import { ImageIcon, VideoIcon } from "lucide-react"
 import { useState } from "react"
 import UploadImage from "./upload-image"
-// import UploadVideo from "./upload-video"
+import UploadVideo from "./upload-video"
 
 export default function UploadForm() {
   const activeLayer = useLayerStore((state) => state.activeLayer)
@@ -20,7 +20,7 @@ export default function UploadForm() {
     return (
       <div className="w-full p-24 flex flex-col  justify-center  h-full">
         {selectedType === "image" ? <UploadImage /> : null}
-        {/* {selectedType === "video" ? <UploadVideo /> : null} */}
+        {selectedType === "video" ? <UploadVideo /> : null}
 
         <RadioGroup
           defaultValue="image"
