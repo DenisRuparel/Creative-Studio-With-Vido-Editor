@@ -26,7 +26,6 @@ export default function SmartCrop() {
   const setGenerating = useImageStore((state) => state.setGenerating)
   const activeLayer = useLayerStore((state) => state.activeLayer)
   const addLayer = useLayerStore((state) => state.addLayer)
-  const layers = useLayerStore((state) => state.layers)
   const [height, setHeight] = useState(0)
   const [width, setWidth] = useState(0)
   const generating = useImageStore((state) => state.generating)

@@ -30,7 +30,7 @@ export default function UploadForm() {
           className="flex items-center justify-center gap-8 py-8"
         >
           <Card
-            onClick={(e) => setSelectedType("image")}
+            onClick={() => setSelectedType("image")}
             className={cn(
               "flex flex-col items-center justify-center py-4 px-6 gap-4 cursor-pointer",
               selectedType === "image" ? "border-primary" : null
@@ -53,7 +53,7 @@ export default function UploadForm() {
             />
           </Card>
           <Card
-            onClick={(e) => setSelectedType("video")}
+            onClick={() => setSelectedType("video")}
             className={cn(
               "flex flex-col items-center justify-center p-4 gap-4 cursor-pointer",
               selectedType === "video" ? "border-primary" : null

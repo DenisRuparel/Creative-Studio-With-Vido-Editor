@@ -35,7 +35,6 @@ export default function UploadVideo() {
 
         const formData = new FormData()
         formData.append("video", acceptedFiles[0])
-        const objectUrl = URL.createObjectURL(acceptedFiles[0])
         setGenerating(true)
 
         const res = await uploadVideo({ video: formData })

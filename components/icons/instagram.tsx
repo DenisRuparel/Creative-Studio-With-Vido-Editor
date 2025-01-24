@@ -3,7 +3,6 @@
 import { useTheme } from "next-themes";
 
 export default function Instagram() {
-    const { theme } = useTheme();
 
     return (
         <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">

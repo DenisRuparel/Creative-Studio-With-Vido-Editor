@@ -3,22 +3,29 @@ import { StoreApi, useStore } from "zustand"
 import React from "react"
 import { persist, createJSONStorage } from "zustand/middleware"
 
-const createZustandContext = <TInitial, TStore extends StoreApi<any>>(
+// Updated: Use a proper type instead of `any`.
+const createZustandContext = <TInitial, TStore extends StoreApi<unknown>>(
   getStore: (initial: TInitial) => TStore
 ) => {
-  const Context = React.createContext(null as any as TStore)
+  const Context = React.createContext<TStore | null>(null)
 
   const Provider = (props: {
     children?: React.ReactNode
     initialValue: TInitial
   }) => {
-    const [store] = React.useState(getStore(props.initialValue))
+    const [store] = React.useState(() => getStore(props.initialValue))
 
     return <Context.Provider value={store}>{props.children}</Context.Provider>
   }
 
   return {
-    useContext: () => React.useContext(Context),
+    useContext: () => {
+      const context = React.useContext(Context)
+      if (!context) {
+        throw new Error("useContext must be used within a Provider")
+      }
+      return context
+    },
     Context,
     Provider,
   }

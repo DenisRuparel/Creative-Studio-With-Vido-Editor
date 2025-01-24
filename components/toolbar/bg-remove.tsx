@@ -13,15 +13,11 @@ import { useLayerStore } from "@/lib/layer-store"
 import { toast } from "sonner"
 
 export default function BgRemove() {
-  const tags = useImageStore((state) => state.tags)
-  const setActiveTag = useImageStore((state) => state.setActiveTag)
   const activeTag = useImageStore((state) => state.activeTag)
-  const setActiveColor = useImageStore((state) => state.setActiveColor)
   const activeColor = useImageStore((state) => state.activeColor)
   const setGenerating = useImageStore((state) => state.setGenerating)
   const activeLayer = useLayerStore((state) => state.activeLayer)
   const addLayer = useLayerStore((state) => state.addLayer)
-  const layers = useLayerStore((state) => state.layers)
   const generating = useImageStore((state) => state.generating)
   const setActiveLayer = useLayerStore((state) => state.setActiveLayer)
   return (

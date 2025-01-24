@@ -3,7 +3,6 @@
 import { useTheme } from "next-themes"
 
 export default function Youtube() {
-  const { theme } = useTheme()
   return (
     <svg
       className="w-10 h-10"
