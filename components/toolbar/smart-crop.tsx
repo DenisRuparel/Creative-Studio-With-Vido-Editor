@@ -26,8 +26,6 @@ export default function SmartCrop() {
   const setGenerating = useImageStore((state) => state.setGenerating)
   const activeLayer = useLayerStore((state) => state.activeLayer)
   const addLayer = useLayerStore((state) => state.addLayer)
-  const [height, setHeight] = useState(0)
-  const [width, setWidth] = useState(0)
   const generating = useImageStore((state) => state.generating)
   const setActiveLayer = useLayerStore((state) => state.setActiveLayer)
   const [aspectRatio, setAspectRatio] = useState("16:9")
@@ -49,8 +47,8 @@ export default function SmartCrop() {
         id: newLayerId,
         name: "cropped " + activeLayer.name,
         format: activeLayer.format,
-        height: height + activeLayer.height!,
-        width: width + activeLayer.width!,
+        height: activeLayer.height!,
+        width: activeLayer.width!,
         url: res.data.success,
         publicId: activeLayer.publicId,
         resourceType: "video",
