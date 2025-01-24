@@ -4,11 +4,10 @@ import ActiveImage from "./active-image"
 import { useLayerStore } from "@/lib/layer-store"
 import Layers from "./layers"
 import ImageTools from "./toolbar/image-tools"
-// import VideoTools from "./toolbar/video-tools"
+import VideoTools from "./toolbar/video-tools"
 import { ModeToggle } from "./toggle"
-// import GenerativeFill from "./toolbar/generative-fill"
 import Loading from "./loading"
-// import ExportAsset from "./toolbar/export-image"
+import ExportAsset from "./toolbar/export-image"
 
 export default function Editor() {
   const activeLayer = useLayerStore((state) => state.activeLayer)
@@ -20,11 +19,11 @@ export default function Editor() {
           <ModeToggle />
         </div>
         <div className="flex flex-col gap-4 ">
-          {/* {activeLayer.resourceType === "video" ? <VideoTools /> : null} */}
+          {activeLayer.resourceType === "video" ? <VideoTools /> : null}
           {activeLayer.resourceType === "image" ? <ImageTools /> : null}
-          {/* {activeLayer.resourceType & & (
+          {activeLayer.resourceType && (
             <ExportAsset resource={activeLayer.resourceType} />
-          )} */}
+          )}
         </div>
       </div>
       <Loading />
