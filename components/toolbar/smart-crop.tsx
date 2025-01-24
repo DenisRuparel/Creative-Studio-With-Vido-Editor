@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "../ui/card"
 import Instagram from "../icons/instagram"
+import TikTok from "../icons/tiktok"
 import Youtube from "../icons/youtube"
 import { cn } from "@/lib/utils"
 
@@ -120,6 +121,23 @@ export default function SmartCrop() {
             </Card>
             <Card
               className={cn(
+                aspectRatio === "9:16" ? " border-primary" : "",
+                "p-4 w-36 cursor-pointer"
+              )}
+              onClick={() => setAspectRatio("9:16")}
+            >
+              <CardHeader className="p-0 text-center">
+                <CardTitle className="text-md ">TikTok</CardTitle>
+                <CardDescription>
+                  <p className="text-sm font-bold ">9:16</p>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center p-0 pt-2">
+                <TikTok />
+              </CardContent>
+            </Card>
+            <Card
+              className={cn(
                 aspectRatio === "1:1" ? " border-primary" : "",
                 "p-4 w-36 cursor-pointer"
               )}
@@ -135,6 +153,8 @@ export default function SmartCrop() {
                 <Square className="w-10 h-10" />
               </CardContent>
             </Card>
+
+            
           </div>
 
           <Button
