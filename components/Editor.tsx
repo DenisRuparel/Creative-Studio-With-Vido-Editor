@@ -8,8 +8,16 @@ import VideoTools from "./toolbar/video-tools"
 import { ModeToggle } from "./toggle"
 import Loading from "./loading"
 import ExportAsset from "./toolbar/export-image"
+import { useEffect, useState } from 'react';
 
 export default function Editor() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
   const activeLayer = useLayerStore((state) => state.activeLayer)
 
   return (
