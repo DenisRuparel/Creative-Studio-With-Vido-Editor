@@ -8,7 +8,6 @@ import VideoTools from "./toolbar/video-tools"
 import { ModeToggle } from "./toggle"
 import Loading from "./loading"
 import ExportAsset from "./toolbar/export-image"
-import { useEffect, useState } from 'react';
 
 export default function Editor() {
   const activeLayer = useLayerStore((state) => state.activeLayer)
