@@ -1,7 +1,7 @@
 import { createStore } from "zustand/vanilla"
 import { StoreApi, useStore } from "zustand"
 import React from "react"
-import { persist } from "zustand/middleware"
+import { persist, createJSONStorage } from "zustand/middleware"
 
 const createZustandContext = <TInitial, TStore extends StoreApi<unknown>>(
   getStore: (initial: TInitial) => TStore
@@ -120,7 +120,16 @@ const getStore = (initialState: {
             }
           }),
       }),
-      { name: "layer-storage" }
+      {
+        name: "layer-storage",
+        storage: createJSONStorage(() =>
+          typeof window !== 'undefined' ? localStorage : {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          }
+        ),
+      }
     )
   )
 }

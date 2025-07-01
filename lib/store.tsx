@@ -61,7 +61,13 @@ const getStore = (initialState: {
       }),
       {
         name: "image-storage",
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(() =>
+          typeof window !== 'undefined' ? localStorage : {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          }
+        ),
       }
     )
   )

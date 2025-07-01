@@ -38,17 +38,19 @@ export default function ExportAsset({ resource }: { resource: string }) {
         }
         const imageBlob = await imageResponse.blob()
 
-        // Create a download link and trigger the download
-        const downloadUrl = URL.createObjectURL(imageBlob)
-        const link = document.createElement("a")
-        link.href = downloadUrl
-        link.download = data.filename
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        // Create a download link and trigger the download - only on client side
+        if (typeof window !== 'undefined') {
+          const downloadUrl = URL.createObjectURL(imageBlob)
+          const link = document.createElement("a")
+          link.href = downloadUrl
+          link.download = data.filename
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
 
-        // Clean up the object URL
-        URL.revokeObjectURL(downloadUrl)
+          // Clean up the object URL
+          URL.revokeObjectURL(downloadUrl)
+        }
       } catch (error) {
         console.error("Download failed:", error)
         // Here you could show an error message to the user
