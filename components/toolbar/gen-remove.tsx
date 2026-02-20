@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
+import { cn, generateUUID } from "@/lib/utils"
 import { genRemove } from "../../server/gen-remove"
 import { Eraser } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
@@ -90,7 +90,7 @@ export default function GenRemove() {
             if (res?.data?.success) {
               setGenerating(false)
 
-              const newLayerId = crypto.randomUUID()
+              const newLayerId = generateUUID()
               addLayer({
                 id: newLayerId,
                 url: res.data.success,

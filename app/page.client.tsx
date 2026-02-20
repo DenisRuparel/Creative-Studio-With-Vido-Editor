@@ -3,6 +3,7 @@
 import Editor from "@/components/Editor"
 import { LayerStore } from "@/lib/layer-store"
 import { ImageStore } from "@/lib/store"
+import { generateUUID } from "@/lib/utils"
 
 export default function HomeClient() {
   return (
@@ -17,7 +18,7 @@ export default function HomeClient() {
           layerComparisonMode: false,
           layers: [
             {
-              id: crypto.randomUUID(),
+              id: generateUUID(),
               url: "",
               height: 0,
               width: 0,

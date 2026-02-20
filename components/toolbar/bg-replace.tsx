@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { ImageOff } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
 import { useState } from "react"
+import { generateUUID } from "@/lib/utils"
 
 export default function AIBackgroundReplace() {
   const setGenerating = useImageStore((state) => state.setGenerating)
@@ -67,7 +68,7 @@ export default function AIBackgroundReplace() {
             })
 
             if (res?.data?.success) {
-              const newLayerId = crypto.randomUUID()
+              const newLayerId = generateUUID()
               addLayer({
                 id: newLayerId,
                 name: "bg-replaced-" + activeLayer.name,

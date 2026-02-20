@@ -15,6 +15,7 @@ import { Scissors } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { generateUUID } from "@/lib/utils"
 
 export default function ExtractPart() {
   const setGenerating = useImageStore((state) => state.setGenerating)
@@ -124,7 +125,7 @@ export default function ExtractPart() {
             })
 
             if (res?.data?.success) {
-              const newLayerId = crypto.randomUUID()
+              const newLayerId = generateUUID()
               addLayer({
                 id: newLayerId,
                 name: "extracted-" + activeLayer.name,

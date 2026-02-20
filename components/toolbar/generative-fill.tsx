@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Crop } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
 import { AnimatePresence, motion } from "framer-motion"
+import { generateUUID } from "@/lib/utils"
 
 const PREVIEW_SIZE = 250
 const EXPANSION_THRESHOLD = 250 // px
@@ -83,7 +84,7 @@ export default function GenerativeFill() {
     if (res?.data?.success) {
       console.log(res.data.success)
       setGenerating(false)
-      const newLayerId = crypto.randomUUID()
+      const newLayerId = generateUUID()
       addLayer({
         id: newLayerId,
         name: "generative-fill",

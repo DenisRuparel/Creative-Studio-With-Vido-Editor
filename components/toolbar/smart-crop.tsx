@@ -20,7 +20,7 @@ import {
 import Instagram from "../icons/instagram"
 import TikTok from "../icons/tiktok"
 import Youtube from "../icons/youtube"
-import { cn } from "@/lib/utils"
+import { cn, generateUUID } from "@/lib/utils"
 
 export default function SmartCrop() {
   const setGenerating = useImageStore((state) => state.setGenerating)
@@ -41,7 +41,7 @@ export default function SmartCrop() {
     if (res?.data?.success) {
       console.log(res.data.success)
       setGenerating(false)
-      const newLayerId = crypto.randomUUID()
+      const newLayerId = generateUUID()
       const thumbnailUrl = res.data.success.replace(/\.[^/.]+$/, ".jpg")
       addLayer({
         id: newLayerId,
