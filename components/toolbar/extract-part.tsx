@@ -16,6 +16,7 @@ import { useLayerStore } from "@/lib/layer-store"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { generateUUID } from "@/lib/utils"
+import { toast } from "sonner"
 
 export default function ExtractPart() {
   const setGenerating = useImageStore((state) => state.setGenerating)
@@ -114,30 +115,62 @@ export default function ExtractPart() {
           }
           className="w-full mt-4"
           onClick={async () => {
-            setGenerating(true)
-            const res = await extractImage({
-              prompts: prompts.filter((p) => p.trim() !== ""),
-              activeImage: activeLayer.url!,
-              format: activeLayer.format!,
-              multiple,
-              mode: mode as "default" | "mask",
-              invert,
-            })
+            if (!activeLayer?.url) {
+              toast.error("Please upload an image first")
+              return
+            }
+            if (prompts.every((p) => p.trim() === "")) {
+              toast.info("Enter at least one extraction prompt")
+              return
+            }
 
-            if (res?.data?.success) {
-              const newLayerId = generateUUID()
-              addLayer({
-                id: newLayerId,
-                name: "extracted-" + activeLayer.name,
-                format: ".png",
-                height: activeLayer.height,
-                width: activeLayer.width,
-                url: res.data.success,
-                publicId: activeLayer.publicId,
-                resourceType: "image",
+            const toastId = toast.loading("Extracting parts...", {
+              id: "extract",
+            })
+            setGenerating(true)
+
+            try {
+              const res = await extractImage({
+                prompts: prompts.filter((p) => p.trim() !== ""),
+                activeImage: activeLayer.url!,
+                format: activeLayer.format!,
+                multiple,
+                mode: mode as "default" | "mask",
+                invert,
               })
+
+              if (res?.data?.success) {
+                const newLayerId = generateUUID()
+                addLayer({
+                  id: newLayerId,
+                  name: "extracted-" + activeLayer.name,
+                  format: ".png",
+                  height: activeLayer.height,
+                  width: activeLayer.width,
+                  url: res.data.success,
+                  publicId: activeLayer.publicId,
+                  resourceType: "image",
+                })
+                toast.success("Extracted successfully!", {
+                  id: "extract",
+                })
+                setActiveLayer(newLayerId)
+              } else if (res?.data?.error) {
+                toast.error(res.data.error || "Failed to extract", {
+                  id: "extract",
+                })
+              } else if (res?.serverError) {
+                toast.error(res.serverError, {
+                  id: "extract",
+                })
+              }
+            } catch (error) {
+              toast.error("An error occurred while extracting", {
+                id: "extract",
+              })
+              console.error("Extract error:", error)
+            } finally {
               setGenerating(false)
-              setActiveLayer(newLayerId)
             }
           }}
         >

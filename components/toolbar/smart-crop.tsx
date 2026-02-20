@@ -31,34 +31,56 @@ export default function SmartCrop() {
   const [aspectRatio, setAspectRatio] = useState("16:9")
 
   const handleGenCrop = async () => {
-    setGenerating(true)
-    const res = await genCrop({
-      height: activeLayer.height!.toString(),
-      aspect: aspectRatio,
-      activeVideo: activeLayer.url!,
-    })
-
-    if (res?.data?.success) {
-      console.log(res.data.success)
-      setGenerating(false)
-      const newLayerId = generateUUID()
-      const thumbnailUrl = res.data.success.replace(/\.[^/.]+$/, ".jpg")
-      addLayer({
-        id: newLayerId,
-        name: "cropped " + activeLayer.name,
-        format: activeLayer.format,
-        height: activeLayer.height!,
-        width: activeLayer.width!,
-        url: res.data.success,
-        publicId: activeLayer.publicId,
-        resourceType: "video",
-        poster: thumbnailUrl,
-      })
-      toast.success(res.data.success)
-      setActiveLayer(newLayerId)
+    if (!activeLayer?.url) {
+      toast.error("Please upload a video first")
+      return
     }
-    if (res?.data?.error) {
-      toast.error(res.data.error)
+
+    const toastId = toast.loading("Cropping video...", {
+      id: "smart-crop",
+    })
+    setGenerating(true)
+
+    try {
+      const res = await genCrop({
+        height: activeLayer.height!.toString(),
+        aspect: aspectRatio,
+        activeVideo: activeLayer.url!,
+      })
+
+      if (res?.data?.success) {
+        const newLayerId = generateUUID()
+        const thumbnailUrl = res.data.success.replace(/\.[^/.]+$/, ".jpg")
+        addLayer({
+          id: newLayerId,
+          name: "cropped " + activeLayer.name,
+          format: activeLayer.format,
+          height: activeLayer.height!,
+          width: activeLayer.width!,
+          url: res.data.success,
+          publicId: activeLayer.publicId,
+          resourceType: "video",
+          poster: thumbnailUrl,
+        })
+        toast.success("Video cropped successfully!", {
+          id: "smart-crop",
+        })
+        setActiveLayer(newLayerId)
+      } else if (res?.data?.error) {
+        toast.error(res.data.error || "Failed to crop video", {
+          id: "smart-crop",
+        })
+      } else if (res?.serverError) {
+        toast.error(res.serverError, {
+          id: "smart-crop",
+        })
+      }
+    } catch (error) {
+      toast.error("An error occurred while cropping video", {
+        id: "smart-crop",
+      })
+      console.error("Smart crop error:", error)
+    } finally {
       setGenerating(false)
     }
   }

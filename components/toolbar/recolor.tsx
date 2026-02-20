@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { cn, generateUUID } from "@/lib/utils"
 import { Paintbrush } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
+import { toast } from "sonner"
 
 export default function AIRecolor() {
   const tags = useImageStore((state) => state.tags)
@@ -113,27 +114,59 @@ export default function AIRecolor() {
           }
           className="w-full mt-4"
           onClick={async () => {
-            setGenerating(true)
-            const res = await recolorImage({
-              color: `to-color_` + activeColor,
-              activeImage: activeLayer.url!,
-              tag: "prompt_" + activeTag,
-            })
+            if (!activeLayer?.url) {
+              toast.error("Please upload an image first")
+              return
+            }
+            if (!activeTag || !activeColor) {
+              toast.info("Please select a tag and color")
+              return
+            }
 
-            if (res?.data?.success) {
-              const newLayerId = generateUUID()
-              addLayer({
-                id: newLayerId,
-                name: "recolored" + activeLayer.name,
-                format: activeLayer.format,
-                height: activeLayer.height,
-                width: activeLayer.width,
-                url: res.data.success,
-                publicId: activeLayer.publicId,
-                resourceType: "image",
+            const toastId = toast.loading("Recoloring image...", {
+              id: "recolor",
+            })
+            setGenerating(true)
+
+            try {
+              const res = await recolorImage({
+                color: `to-color_` + activeColor,
+                activeImage: activeLayer.url!,
+                tag: "prompt_" + activeTag,
               })
+
+              if (res?.data?.success) {
+                const newLayerId = generateUUID()
+                addLayer({
+                  id: newLayerId,
+                  name: "recolored" + activeLayer.name,
+                  format: activeLayer.format,
+                  height: activeLayer.height,
+                  width: activeLayer.width,
+                  url: res.data.success,
+                  publicId: activeLayer.publicId,
+                  resourceType: "image",
+                })
+                toast.success("AI recolor applied successfully!", {
+                  id: "recolor",
+                })
+                setActiveLayer(newLayerId)
+              } else if (res?.data?.error) {
+                toast.error(res.data.error || "Failed to recolor image", {
+                  id: "recolor",
+                })
+              } else if (res?.serverError) {
+                toast.error(res.serverError, {
+                  id: "recolor",
+                })
+              }
+            } catch (error) {
+              toast.error("An error occurred while recoloring image", {
+                id: "recolor",
+              })
+              console.error("Recolor error:", error)
+            } finally {
               setGenerating(false)
-              setActiveLayer(newLayerId)
             }
           }}
         >

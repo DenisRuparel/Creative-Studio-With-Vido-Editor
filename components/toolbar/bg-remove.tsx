@@ -47,28 +47,57 @@ export default function BgRemove() {
           }
           className="w-full mt-4"
           onClick={async () => {
-            setGenerating(true)
-            const res = await bgRemoval({
-              activeImage: activeLayer.url!,
-              format: activeLayer.format!,
-            })
-            if (res?.data?.success) {
-              const newLayerId = generateUUID()
-              addLayer({
-                id: newLayerId,
-                name: "bg-removed" + activeLayer.name,
-                format: "png",
-                height: activeLayer.height,
-                width: activeLayer.width,
-                url: res.data.success,
-                publicId: activeLayer.publicId,
-                resourceType: "image",
-              })
-              setGenerating(false)
-              setActiveLayer(newLayerId)
+            if (!activeLayer?.url) {
+              toast.error("Please upload an image first")
+              return
             }
-            if (res?.serverError) {
-              toast.error(res.serverError)
+            if (!activeTag || !activeColor) {
+              toast.info("Please select a tag and color")
+              return
+            }
+
+            const toastId = toast.loading("Removing background...", {
+              id: "bg-remove",
+            })
+            setGenerating(true)
+
+            try {
+              const res = await bgRemoval({
+                activeImage: activeLayer.url!,
+                format: activeLayer.format!,
+              })
+
+              if (res?.data?.success) {
+                const newLayerId = generateUUID()
+                addLayer({
+                  id: newLayerId,
+                  name: "bg-removed" + activeLayer.name,
+                  format: "png",
+                  height: activeLayer.height,
+                  width: activeLayer.width,
+                  url: res.data.success,
+                  publicId: activeLayer.publicId,
+                  resourceType: "image",
+                })
+                toast.success("Background removal applied successfully!", {
+                  id: "bg-remove",
+                })
+                setActiveLayer(newLayerId)
+              } else if (res?.data?.error) {
+                toast.error(res.data.error || "Failed to remove background", {
+                  id: "bg-remove",
+                })
+              } else if (res?.serverError) {
+                toast.error(res.serverError, {
+                  id: "bg-remove",
+                })
+              }
+            } catch (error) {
+              toast.error("An error occurred while removing background", {
+                id: "bg-remove",
+              })
+              console.error("Background removal error:", error)
+            } finally {
               setGenerating(false)
             }
           }}

@@ -82,26 +82,58 @@ export default function GenRemove() {
             !activeTag || !activeColor || !activeLayer.url || generating
           }
           onClick={async () => {
-            setGenerating(true)
-            const res = await genRemove({
-              activeImage: activeLayer.url!,
-              prompt: activeTag,
-            })
-            if (res?.data?.success) {
-              setGenerating(false)
+            if (!activeLayer?.url) {
+              toast.error("Please upload an image first")
+              return
+            }
+            if (!activeTag) {
+              toast.info("Enter what you want to remove")
+              return
+            }
 
-              const newLayerId = generateUUID()
-              addLayer({
-                id: newLayerId,
-                url: res.data.success,
-                format: activeLayer.format,
-                height: activeLayer.height,
-                width: activeLayer.width,
-                name: activeLayer.name,
-                publicId: activeLayer.publicId,
-                resourceType: "image",
+            const toastId = toast.loading("Removing object...", {
+              id: "gen-remove",
+            })
+            setGenerating(true)
+
+            try {
+              const res = await genRemove({
+                activeImage: activeLayer.url!,
+                prompt: activeTag,
               })
-              setActiveLayer(newLayerId)
+
+              if (res?.data?.success) {
+                const newLayerId = generateUUID()
+                addLayer({
+                  id: newLayerId,
+                  url: res.data.success,
+                  format: activeLayer.format,
+                  height: activeLayer.height,
+                  width: activeLayer.width,
+                  name: activeLayer.name,
+                  publicId: activeLayer.publicId,
+                  resourceType: "image",
+                })
+                toast.success("Object removed successfully!", {
+                  id: "gen-remove",
+                })
+                setActiveLayer(newLayerId)
+              } else if (res?.data?.error) {
+                toast.error(res.data.error || "Failed to remove object", {
+                  id: "gen-remove",
+                })
+              } else if (res?.serverError) {
+                toast.error(res.serverError, {
+                  id: "gen-remove",
+                })
+              }
+            } catch (error) {
+              toast.error("An error occurred while removing object", {
+                id: "gen-remove",
+              })
+              console.error("Gen remove error:", error)
+            } finally {
+              setGenerating(false)
             }
           }}
         >

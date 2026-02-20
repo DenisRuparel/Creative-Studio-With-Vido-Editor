@@ -19,6 +19,7 @@ import LayerImage from "./layers/layer-image"
 import { cn, generateUUID } from "@/lib/utils"
 import Image from "next/image"
 import LayerInfo from "./layers/layer-info"
+import { toast } from "sonner"
 
 export default function Layers() {
   const layers = useLayerStore((state) => state.layers)
@@ -169,6 +170,7 @@ export default function Layers() {
               name: "",
               format: "",
             })
+            toast.success("Layer created successfully!")
           }}
           variant="outline"
           className="w-full flex gap-2"

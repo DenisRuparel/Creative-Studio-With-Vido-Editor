@@ -12,49 +12,63 @@ import {
 } from "../ui/card"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 export default function ExportAsset({ resource }: { resource: string }) {
   const activeLayer = useLayerStore((state) => state.activeLayer)
   const [selected, setSelected] = useState("original")
   const handleDownload = async () => {
-    if (activeLayer?.publicId) {
-      try {
-        const res = await fetch(
-          `/api/download?publicId=${activeLayer.publicId}&quality=${selected}&resource_type=${activeLayer.resourceType}&format=${activeLayer.format}&url=${activeLayer.url}`
-        )
-        if (!res.ok) {
-          throw new Error("Failed to fetch image URL")
-        }
-        const data = await res.json()
-        console.log(data)
-        if (data.error) {
-          throw new Error(data.error)
-        }
+    if (!activeLayer?.publicId) {
+      toast.error("Please upload an image first")
+      return
+    }
 
-        // Fetch the image
-        const imageResponse = await fetch(data.url)
-        if (!imageResponse.ok) {
-          throw new Error("Failed to fetch image")
-        }
-        const imageBlob = await imageResponse.blob()
+    const toastId = toast.loading("Preparing export...", {
+      id: "export",
+    })
 
-        // Create a download link and trigger the download - only on client side
-        if (typeof window !== 'undefined') {
-          const downloadUrl = URL.createObjectURL(imageBlob)
-          const link = document.createElement("a")
-          link.href = downloadUrl
-          link.download = data.filename
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-
-          // Clean up the object URL
-          URL.revokeObjectURL(downloadUrl)
-        }
-      } catch (error) {
-        console.error("Download failed:", error)
-        // Here you could show an error message to the user
+    try {
+      const res = await fetch(
+        `/api/download?publicId=${activeLayer.publicId}&quality=${selected}&resource_type=${activeLayer.resourceType}&format=${activeLayer.format}&url=${activeLayer.url}`
+      )
+      if (!res.ok) {
+        throw new Error("Failed to fetch image URL")
       }
+      const data = await res.json()
+      console.log(data)
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // Fetch the image
+      const imageResponse = await fetch(data.url)
+      if (!imageResponse.ok) {
+        throw new Error("Failed to fetch image")
+      }
+      const imageBlob = await imageResponse.blob()
+
+      // Create a download link and trigger the download - only on client side
+      if (typeof window !== "undefined") {
+        const downloadUrl = URL.createObjectURL(imageBlob)
+        const link = document.createElement("a")
+        link.href = downloadUrl
+        link.download = data.filename
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        // Clean up the object URL
+        URL.revokeObjectURL(downloadUrl)
+      }
+
+      toast.success("Image exported successfully!", {
+        id: "export",
+      })
+    } catch (error) {
+      console.error("Download failed:", error)
+      toast.error("Failed to export image. Please try again.", {
+        id: "export",
+      })
     }
   }
 

@@ -13,6 +13,7 @@ import { Crop } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
 import { AnimatePresence, motion } from "framer-motion"
 import { generateUUID } from "@/lib/utils"
+import { toast } from "sonner"
 
 const PREVIEW_SIZE = 250
 const EXPANSION_THRESHOLD = 250 // px
@@ -74,31 +75,59 @@ export default function GenerativeFill() {
   }, [activeLayer, width, height])
 
   const handleGenFill = async () => {
-    setGenerating(true)
-    const res = await genFill({
-      width: (width + activeLayer.width!).toString(),
-      height: (height + activeLayer.height!).toString(),
-      aspect: "1:1",
-      activeImage: activeLayer.url!,
-    })
-    if (res?.data?.success) {
-      console.log(res.data.success)
-      setGenerating(false)
-      const newLayerId = generateUUID()
-      addLayer({
-        id: newLayerId,
-        name: "generative-fill",
-        format: activeLayer.format,
-        height: height + activeLayer.height!,
-        width: width + activeLayer.width!,
-        url: res.data.success,
-        publicId: activeLayer.publicId,
-        resourceType: "image",
-      })
-      setActiveLayer(newLayerId)
+    if (!activeLayer?.url) {
+      toast.error("Please upload an image first")
+      return
     }
-    if (res?.data?.error) {
-      console.log(res.data.error)
+    if (!width && !height) {
+      toast.info("Adjust width or height to expand image")
+      return
+    }
+
+    const toastId = toast.loading("Generating fill...", {
+      id: "gen-fill",
+    })
+    setGenerating(true)
+
+    try {
+      const res = await genFill({
+        width: (width + activeLayer.width!).toString(),
+        height: (height + activeLayer.height!).toString(),
+        aspect: "1:1",
+        activeImage: activeLayer.url!,
+      })
+
+      if (res?.data?.success) {
+        const newLayerId = generateUUID()
+        addLayer({
+          id: newLayerId,
+          name: "generative-fill",
+          format: activeLayer.format,
+          height: height + activeLayer.height!,
+          width: width + activeLayer.width!,
+          url: res.data.success,
+          publicId: activeLayer.publicId,
+          resourceType: "image",
+        })
+        toast.success("Generative fill applied successfully!", {
+          id: "gen-fill",
+        })
+        setActiveLayer(newLayerId)
+      } else if (res?.data?.error) {
+        toast.error(res.data.error || "Failed to generate fill", {
+          id: "gen-fill",
+        })
+      } else if (res?.serverError) {
+        toast.error(res.serverError, {
+          id: "gen-fill",
+        })
+      }
+    } catch (error) {
+      toast.error("An error occurred while generating fill", {
+        id: "gen-fill",
+      })
+      console.error("Generative fill error:", error)
+    } finally {
       setGenerating(false)
     }
   }

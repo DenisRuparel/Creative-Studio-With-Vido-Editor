@@ -21,6 +21,9 @@ export default function VideoTranscription() {
       return
     }
 
+    const toastId = toast.loading("Transcribing video...", {
+      id: "transcribe",
+    })
     setTranscribing(true)
     setGenerating(true)
 
@@ -31,7 +34,6 @@ export default function VideoTranscription() {
 
       if (result) {
         if (result.data && "success" in result.data) {
-          toast.success(result.data.success)
           if (result.data.subtitledVideoUrl) {
             updateLayer({
               ...activeLayer,
@@ -39,14 +41,23 @@ export default function VideoTranscription() {
             })
             setActiveLayer(activeLayer.id)
           }
+          toast.success("Video transcribed successfully!", {
+            id: "transcribe",
+          })
         } else if (result.data && "error" in result.data) {
-          toast.error(result.data.error)
+          toast.error(result.data.error || "Failed to transcribe video", {
+            id: "transcribe",
+          })
         } else {
-          toast.error("Unexpected response from server")
+          toast.error("Unexpected response from server", {
+            id: "transcribe",
+          })
         }
       }
     } catch (error) {
-      toast.error("An error occurred during transcription")
+      toast.error("An error occurred during transcription. Please try again.", {
+        id: "transcribe",
+      })
       console.error("Transcription error:", error)
     } finally {
       setTranscribing(false)

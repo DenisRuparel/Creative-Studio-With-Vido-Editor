@@ -8,6 +8,7 @@ import {
 import { Button } from "../ui/button"
 import { Ellipsis, Trash } from "lucide-react"
 import { Layer, useLayerStore } from "@/lib/layer-store"
+import { toast } from "sonner"
 
 export default function LayerInfo({
   layer,
@@ -46,8 +47,12 @@ export default function LayerInfo({
         <Button
           onClick={(e) => {
             e.stopPropagation()
-            setActiveLayer(layerIndex === 0 ? layers[1].id : layers[0].id)
+            const nextLayer = layerIndex === 0 ? layers[1] : layers[0]
+            if (nextLayer) {
+              setActiveLayer(nextLayer.id)
+            }
             removeLayer(layer.id)
+            toast.success("Layer deleted successfully!")
           }}
           variant={"destructive"}
           className="flex items-center gap-2 w-full"

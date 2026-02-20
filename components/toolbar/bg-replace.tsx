@@ -14,6 +14,7 @@ import { ImageOff } from "lucide-react"
 import { useLayerStore } from "@/lib/layer-store"
 import { useState } from "react"
 import { generateUUID } from "@/lib/utils"
+import { toast } from "sonner"
 
 export default function AIBackgroundReplace() {
   const setGenerating = useImageStore((state) => state.setGenerating)
@@ -61,26 +62,58 @@ export default function AIBackgroundReplace() {
           disabled={!activeLayer?.url || generating}
           className="w-full mt-4"
           onClick={async () => {
-            setGenerating(true)
-            const res = await replaceBackground({
-              prompt: prompt,
-              activeImage: activeLayer.url!,
-            })
+            if (!activeLayer?.url) {
+              toast.error("Please upload an image first")
+              return
+            }
 
-            if (res?.data?.success) {
-              const newLayerId = generateUUID()
-              addLayer({
-                id: newLayerId,
-                name: "bg-replaced-" + activeLayer.name,
-                format: activeLayer.format,
-                height: activeLayer.height,
-                width: activeLayer.width,
-                url: res.data.success,
-                publicId: activeLayer.publicId,
-                resourceType: "image",
+            if (!prompt.trim()) {
+              toast.info("Enter a prompt for better results")
+            }
+
+            const toastId = toast.loading("Generating new background...", {
+              id: "bg-replace",
+            })
+            setGenerating(true)
+
+            try {
+              const res = await replaceBackground({
+                prompt: prompt,
+                activeImage: activeLayer.url!,
               })
+
+              if (res?.data?.success) {
+                const newLayerId = generateUUID()
+                addLayer({
+                  id: newLayerId,
+                  name: "bg-replaced-" + activeLayer.name,
+                  format: activeLayer.format,
+                  height: activeLayer.height,
+                  width: activeLayer.width,
+                  url: res.data.success,
+                  publicId: activeLayer.publicId,
+                  resourceType: "image",
+                })
+                toast.success("Background replaced successfully!", {
+                  id: "bg-replace",
+                })
+                setActiveLayer(newLayerId)
+              } else if (res?.data?.error) {
+                toast.error(res.data.error || "Failed to replace background", {
+                  id: "bg-replace",
+                })
+              } else if (res?.serverError) {
+                toast.error(res.serverError, {
+                  id: "bg-replace",
+                })
+              }
+            } catch (error) {
+              toast.error("An error occurred while replacing background", {
+                id: "bg-replace",
+              })
+              console.error("Background replace error:", error)
+            } finally {
               setGenerating(false)
-              setActiveLayer(newLayerId)
             }
           }}
         >
