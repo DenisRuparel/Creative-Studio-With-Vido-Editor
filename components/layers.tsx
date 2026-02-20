@@ -68,19 +68,29 @@ export default function Layers() {
           <div>
             <CardTitle className="text-sm pb-2">Comparing...</CardTitle>
             <CardDescription className="flex gap-2 items-center">
-              <Image
-                alt="compare"
-                width={32}
-                height={32}
-                src={getLayerName(comparedLayers[0]) as string}
-              />
+              {comparedLayers.length > 0 && (
+                <img
+                  alt="compare"
+                  width={32}
+                  height={32}
+                  src={getLayerName(comparedLayers[0]) as string}
+                  className="w-8 h-8 object-cover rounded"
+                  onError={(e) => {
+                    console.error("Comparison thumbnail error:", getLayerName(comparedLayers[0]))
+                  }}
+                />
+              )}
               {comparedLayers.length > 0 && <ArrowRight />}
               {comparedLayers.length > 1 ? (
-                <Image
+                <img
                   alt="compare"
                   width={32}
                   height={32}
                   src={getLayerName(comparedLayers[1]) as string}
+                  className="w-8 h-8 object-cover rounded"
+                  onError={(e) => {
+                    console.error("Comparison thumbnail error:", getLayerName(comparedLayers[1]))
+                  }}
                 />
               ) : (
                 "Nothing here"
