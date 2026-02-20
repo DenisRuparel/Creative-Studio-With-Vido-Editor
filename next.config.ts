@@ -14,6 +14,10 @@ const nextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+    // Allow blob URLs for local previews
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
     serverActions: {

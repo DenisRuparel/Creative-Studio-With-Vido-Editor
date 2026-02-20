@@ -54,23 +54,45 @@ export default function UploadImage() {
         const res = await uploadImage({ image: formData })
 
         if (res?.data?.success) {
+          const cloudinaryResult = res.data.success
+          // Ensure format doesn't have leading dot
+          const format = cloudinaryResult.format?.startsWith('.') 
+            ? cloudinaryResult.format.slice(1) 
+            : cloudinaryResult.format || 'jpg'
+          
+          // Use original_filename or fallback to public_id or filename
+          const filename = cloudinaryResult.original_filename || 
+                          cloudinaryResult.public_id?.split('/').pop() || 
+                          file.name?.replace(/\.[^/.]+$/, '') || 
+                          'image'
+          
           updateLayer({
             id: activeLayer.id,
-            url: res.data.success.url,
-            width: res.data.success.width,
-            height: res.data.success.height,
-            name: res.data.success.original_filename,
-            publicId: res.data.success.public_id,
-            format: res.data.success.format,
-            resourceType: res.data.success.resource_type,
+            url: cloudinaryResult.secure_url || cloudinaryResult.url,
+            width: cloudinaryResult.width || 0,
+            height: cloudinaryResult.height || 0,
+            name: filename,
+            publicId: cloudinaryResult.public_id,
+            format: format,
+            resourceType: cloudinaryResult.resource_type || 'image',
           })
-          setTags(res.data.success.tags)
+          
+          if (cloudinaryResult.tags) {
+            setTags(cloudinaryResult.tags)
+          }
 
           setActiveLayer(activeLayer.id)
-          console.log(activeLayer)
+          console.log("Upload successful:", cloudinaryResult)
           setGenerating(false)
         }
         if (res?.data?.error) {
+          console.error("Upload error:", res.data.error)
+          toast.error(res.data.error || "Failed to upload image")
+          setGenerating(false)
+        }
+        if (res?.serverError) {
+          console.error("Server error:", res.serverError)
+          toast.error("Server error: " + res.serverError)
           setGenerating(false)
         }
       }

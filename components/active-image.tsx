@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import { Layer, useLayerStore } from "@/lib/layer-store"
 import { motion } from "framer-motion"
 import ImageComparison from "./layers/image-comparison"
+import { useState, useEffect } from "react"
 
 export default function ActiveImage() {
   const generating = useImageStore((state) => state.generating)
@@ -13,33 +14,65 @@ export default function ActiveImage() {
   )
   const comparedLayers = useLayerStore((state) => state.comparedLayers)
   const layers = useLayerStore((state) => state.layers)
+  const [imageError, setImageError] = useState<string | null>(null)
+
+  // Reset error when layer URL changes
+  useEffect(() => {
+    setImageError(null)
+  }, [activeLayer.url])
 
   if (!activeLayer.url && comparedLayers.length === 0) return null
 
-  const renderLayer = (layer: Layer) => (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {layer.resourceType === "image" && (
-        <Image
-          alt={layer.name || "Image"}
-          src={layer.url || ""}
-          fill={true}
-          className={cn(
-            "rounded-lg object-contain",
-            generating ? "animate-pulse" : ""
-          )}
-        />
-      )}
-      {layer.resourceType === "video" && (
-        <video
-          width={layer.width}
-          height={layer.height}
-          controls
-          className="rounded-lg object-contain max-w-full max-h-full"
-          src={layer.transcriptionURL || layer.url}
-        />
-      )}
-    </div>
-  )
+  const renderLayer = (layer: Layer) => {
+    // Use regular img tag for blob URLs or if Next.js Image failed
+    const useFallback = layer.url?.startsWith("blob:") || imageError === layer.url
+    
+    return (
+      <div className="relative w-full h-full flex items-center justify-center">
+        {layer.resourceType === "image" && layer.url && (
+          <>
+            {useFallback ? (
+              <img
+                alt={layer.name || "Image"}
+                src={layer.url}
+                className={cn(
+                  "rounded-lg object-contain max-w-full max-h-full",
+                  generating ? "animate-pulse" : ""
+                )}
+                onError={(e) => {
+                  console.error("Image load error (fallback):", layer.url, e)
+                }}
+              />
+            ) : (
+              <Image
+                alt={layer.name || "Image"}
+                src={layer.url}
+                fill={true}
+                className={cn(
+                  "rounded-lg object-contain",
+                  generating ? "animate-pulse" : ""
+                )}
+                unoptimized={true}
+                onError={(e) => {
+                  console.error("Image load error:", layer.url, e)
+                  setImageError(layer.url)
+                }}
+              />
+            )}
+          </>
+        )}
+        {layer.resourceType === "video" && (
+          <video
+            width={layer.width}
+            height={layer.height}
+            controls
+            className="rounded-lg object-contain max-w-full max-h-full"
+            src={layer.transcriptionURL || layer.url}
+          />
+        )}
+      </div>
+    )
+  }
 
   if (layerComparisonMode && comparedLayers.length > 0) {
     const comparisonLayers = comparedLayers
