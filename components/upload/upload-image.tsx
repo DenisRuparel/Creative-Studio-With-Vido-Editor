@@ -215,22 +215,14 @@ export default function UploadImage() {
             toast.error("Image upload failed. Please try again.", {
               id: "upload-progress",
             })
-            setGenerating(false)
-            setUploadProgress(0)
-            URL.revokeObjectURL(objectUrl)
           }
         } catch (error) {
           console.error("Upload error:", error)
           // Error toast is already shown in uploadWithProgress
+        } finally {
           setGenerating(false)
           setUploadProgress(0)
           URL.revokeObjectURL(objectUrl)
-        } finally {
-          // Only clean up if not already done
-          if (uploadProgress > 0) {
-            setGenerating(false)
-            setUploadProgress(0)
-          }
         }
       }
     },
