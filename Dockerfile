@@ -1,24 +1,42 @@
-# Stage 1: Build the application
-FROM node:20-slim AS build
+# -------------------------
+# 1️⃣ Dependencies stage
+# -------------------------
+FROM node:20-alpine AS deps
+
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy source and build
+
+# -------------------------
+# 2️⃣ Build stage
+# -------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
 RUN npm run build
 
-# Stage 2: Run the application
-FROM node:20-slim
+
+# -------------------------
+# 3️⃣ Runtime stage
+# -------------------------
+FROM node:20-alpine AS runner
+
 WORKDIR /app
 
-# Copy ONLY the production files from the build stage
-COPY --from=build /app/package*.json ./
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
+ENV NODE_ENV=production
+
+# Copy only required files
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
+
 CMD ["npm", "start"]

@@ -3,9 +3,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Ignores TypeScript errors when building
   },
-
-  output: 'standalone',
-
   images: {
     remotePatterns: [
       {
