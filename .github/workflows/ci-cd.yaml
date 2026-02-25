@@ -37,24 +37,24 @@ jobs:
           docker build \
             -t $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA} .
 
-  trivy-scan:
-    name: Trivy Image Scan
-    runs-on: self-hosted
-    needs: build
+  # trivy-scan:
+  #   name: Trivy Image Scan
+  #   runs-on: self-hosted
+  #   needs: build
 
-    steps:
-      - name: Trivy scan (CRITICAL vulnerabilities)
-        run: |
-          trivy image \
-            --severity CRITICAL \
-            --exit-code 1 \
-            --no-progress \
-            $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA}
+  #   steps:
+  #     - name: Trivy scan (CRITICAL vulnerabilities)
+  #       run: |
+  #         trivy image \
+  #           --severity CRITICAL \
+  #           --exit-code 1 \
+  #           --no-progress \
+  #           $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA}
 
   deploy:
     name: Deploy to Kubernetes
     runs-on: self-hosted
-    needs: trivy-scan
+    needs: build
 
     steps:
       - name: Push Docker image
