@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-
+      
 env:
   REGISTRY: demo.goharbor.io
   PROJECT: creative-studio
