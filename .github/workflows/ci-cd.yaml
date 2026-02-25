@@ -14,59 +14,31 @@ env:
   CONTAINER_NAME: creative-studio
 
 jobs:
-
   build:
-    name: Build Docker Image
     runs-on: self-hosted
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set image tag
-        run: |
-          echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
+      - run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
 
-      - name: Login to Harbor
-        run: |
+      - run: |
           echo "${{ secrets.HARBOR_PASSWORD }}" | docker login $REGISTRY \
             -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
-      - name: Build Docker image
-        run: |
-          docker build \
-            -t $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA} .
+      - run: |
+          docker build -t $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA} .
 
-  # trivy-scan:
-  #   name: Trivy Image Scan
-  #   runs-on: self-hosted
-  #   needs: build
-
-  #   steps:
-  #     - name: Trivy scan (CRITICAL vulnerabilities)
-  #       run: |
-  #         trivy image \
-  #           --severity CRITICAL \
-  #           --exit-code 1 \
-  #           --no-progress \
-  #           $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA}
-
-  deploy:
-    name: Deploy to Kubernetes
-    runs-on: self-hosted
-    needs: build
-
-    steps:
-      - name: Push Docker image
-        run: |
+      - run: |
           docker push $REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA}
 
-      - name: Update Kubernetes deployment image
-        run: |
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - run: |
           kubectl set image deployment/$DEPLOYMENT_NAME \
             $CONTAINER_NAME=$REGISTRY/$PROJECT/$IMAGE_NAME:${GITHUB_SHA} \
             -n $NAMESPACE
 
-      - name: Verify rollout
-        run: |
+      - run: |
           kubectl rollout status deployment/$DEPLOYMENT_NAME -n $NAMESPACE
