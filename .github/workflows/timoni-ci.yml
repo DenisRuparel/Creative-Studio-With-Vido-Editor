@@ -56,9 +56,9 @@ jobs:
           docker push $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:latest
           echo "Plugin image pushed: $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:latest"
 
-  # ─────────────────────────────────────────
+  # ────────────────────────────────────────
   # Build app image
-  # ─────────────────────────────────────────
+  # ────────────────────────────────────────
   
   build-app:
     runs-on: self-hosted
