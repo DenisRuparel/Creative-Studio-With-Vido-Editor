@@ -59,6 +59,7 @@ jobs:
   # ─────────────────────────────────────────
   # Build app image
   # ─────────────────────────────────────────
+  
   build-app:
     runs-on: self-hosted
     needs: build-plugin
