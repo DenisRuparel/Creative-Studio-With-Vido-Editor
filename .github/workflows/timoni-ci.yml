@@ -16,9 +16,9 @@ env:
   PLUGIN_IMAGE_NAME: timoni-cmp
 
 jobs:
-  # ────────────────────────────────────────────
+  # ───────────────────────────────────────────────────
   # Build plugin sidecar ONLY if argocd/plugin/ changed
-  # ────────────────────────────────────────────
+  # ───────────────────────────────────────────────────
   build-plugin:
     runs-on: self-hosted
 
