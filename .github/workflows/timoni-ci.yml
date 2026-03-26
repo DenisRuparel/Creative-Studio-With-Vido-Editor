@@ -105,11 +105,17 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $REGISTRY/$PROJECT/$IMAGE_NAME:${IMAGE_TAG} .
+          docker pull $REGISTRY/$PROJECT/$IMAGE_NAME:cache || true
+          docker build \
+            --cache-from=$REGISTRY/$PROJECT/$IMAGE_NAME:cache \
+            -t $REGISTRY/$PROJECT/$IMAGE_NAME:${IMAGE_TAG} \
+            -t $REGISTRY/$PROJECT/$IMAGE_NAME:cache \
+            .
 
       - name: Push Docker image
         run: |
           docker push $REGISTRY/$PROJECT/$IMAGE_NAME:${IMAGE_TAG}
+          docker push $REGISTRY/$PROJECT/$IMAGE_NAME:cache
 
       - name: Get image digest
         run: |
