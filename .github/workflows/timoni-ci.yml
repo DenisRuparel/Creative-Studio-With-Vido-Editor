@@ -31,10 +31,12 @@ jobs:
       - name: Check if plugin changed
         id: plugin-check
         run: |
+          echo "BEFORE: ${{ github.event.before }}"
+          echo "SHA: ${{ github.sha }}"
           echo "Changed files:"
           git diff --name-only ${{ github.event.before }} ${{ github.sha }}
       
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q '^argocd/plugin/'; then
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q 'argocd/plugin/'; then
             echo "changed=true" >> $GITHUB_OUTPUT
             echo "Plugin changed ✅"
           else
