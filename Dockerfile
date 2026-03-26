@@ -15,26 +15,28 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ENV NEXT_TELEMETRY_DISABLED=1
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN npm run build
 
 # -------------------------
-# 3️⃣ Runtime stage
+# 3️⃣ Runtime stage (OPTIMIZED)
 # -------------------------
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy only required files
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/.next ./.next
+# ✅ Use Next.js standalone output (IMPORTANT)
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 5000
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
