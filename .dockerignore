@@ -29,6 +29,8 @@ coverage
 
 # Ignore miscellaneous files
 .git
+.next
+.github
 .gitignore
 README.md
 Dockerfile
