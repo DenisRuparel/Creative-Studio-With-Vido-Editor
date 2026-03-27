@@ -1,11 +1,11 @@
 # -------------------------
-# 1️⃣ Dependencies stage (cached layer)
+# 1️⃣ Dependencies stage
 # -------------------------
 FROM node:20-alpine AS deps
 
 WORKDIR /app
 
-# Install dependencies separately (better caching)
+# Install dependencies (cached layer)
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -18,16 +18,13 @@ WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Reuse node_modules from deps
+# Reuse node_modules
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy only necessary files (better cache behavior)
-COPY package.json package-lock.json ./
-COPY next.config.js ./
-COPY public ./public
-COPY src ./src
+# ✅ Copy full project (fixes missing src/next.config issues)
+COPY . .
 
-# Build app
+# Build Next.js app
 RUN npm run build
 
 # -------------------------
@@ -40,7 +37,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy standalone output (smaller image)
+# ✅ Use standalone output (smaller image)
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
