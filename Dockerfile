@@ -5,7 +5,10 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+
+# 🚀 Cache npm dependencies
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # -------------------------
 # 2️⃣ Builder stage
@@ -19,8 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# ❗ Disable turbopack explicitly
-RUN npm run build -- --no-turbo
+RUN npm run build
 
 # -------------------------
 # 3️⃣ Runner stage
