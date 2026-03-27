@@ -99,6 +99,7 @@ jobs:
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-
+          save-always: true
 
       # ✅ Install deps
       - name: Install dependencies
