@@ -1,14 +1,18 @@
 name: Creative Studio CI
+
 on:
   push:
-    branches: [main, master]
+    branches: master
+
 env:
   REGISTRY: demo.goharbor.io
   PROJECT: creative-studio
   IMAGE_NAME: creative-studio
   PLUGIN_IMAGE_NAME: timoni-cmp
+
 permissions:
   contents: write
+
 jobs:
   build-plugin:
     name: Build Timoni CMP image (if changed)
@@ -16,11 +20,13 @@ jobs:
     outputs:
       plugin_changed: ${{ steps.plugin-check.outputs.changed }}
       plugin_digest: ${{ steps.plugin-digest.outputs.digest }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
+
       - name: Detect plugin changes
         id: plugin-check
         shell: bash
@@ -33,6 +39,7 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Timoni CMP unchanged"
           fi
+
       - name: Login to Harbor
         if: steps.plugin-check.outputs.changed == 'true'
         shell: bash
@@ -40,6 +47,7 @@ jobs:
           set -euo pipefail
           echo "${{ secrets.HARBOR_PASSWORD }}" | docker login "${REGISTRY}" \
             -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
       - name: Build plugin image
         if: steps.plugin-check.outputs.changed == 'true'
         shell: bash
@@ -50,6 +58,7 @@ jobs:
             -t "${REGISTRY}/${PROJECT}/${PLUGIN_IMAGE_NAME}:latest" \
             -f argocd/cmp/timoni/Dockerfile \
             argocd/cmp/timoni
+
       - name: Push plugin image
         if: steps.plugin-check.outputs.changed == 'true'
         shell: bash
@@ -57,6 +66,7 @@ jobs:
           set -euo pipefail
           docker push "${REGISTRY}/${PROJECT}/${PLUGIN_IMAGE_NAME}:${GITHUB_SHA}"
           docker push "${REGISTRY}/${PROJECT}/${PLUGIN_IMAGE_NAME}:latest"
+
       - name: Get plugin image digest
         if: steps.plugin-check.outputs.changed == 'true'
         id: plugin-digest
@@ -68,6 +78,7 @@ jobs:
           DIGEST_REF="$(docker image inspect "${REGISTRY}/${PROJECT}/${PLUGIN_IMAGE_NAME}:${GITHUB_SHA}" --format '{{index .RepoDigests 0}}')"
           echo "digest=${DIGEST_REF}" >> "$GITHUB_OUTPUT"
           echo "Plugin digest: ${DIGEST_REF}"
+
       - name: Update repo-server sidecar patch to latest digest
         if: steps.plugin-check.outputs.changed == 'true'
         shell: bash
@@ -75,6 +86,7 @@ jobs:
           set -euo pipefail
           PATCH_FILE="argocd/patches/argocd-repo-server-timoni-cmp.yaml"
           sed -i "s|^\\(\\s*image:\\s*\\).*${PROJECT}/${PLUGIN_IMAGE_NAME}.*$|\\1${{ steps.plugin-digest.outputs.digest }}|" "${PATCH_FILE}"
+
       - name: Commit patch update (if any)
         if: steps.plugin-check.outputs.changed == 'true'
         shell: bash
@@ -89,19 +101,23 @@ jobs:
           git add argocd/patches/argocd-repo-server-timoni-cmp.yaml
           git commit -m "chore(argocd): bump timoni cmp image digest"
           git push origin "${GITHUB_REF_NAME}"
+
   build-app:
     name: Build application image and trigger CD
     runs-on: self-hosted
     needs: build-plugin
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Login to Harbor
         shell: bash
         run: |
           set -euo pipefail
           echo "${{ secrets.HARBOR_PASSWORD }}" | docker login "${REGISTRY}" \
             -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
       - name: Build app image
         shell: bash
         run: |
@@ -110,12 +126,14 @@ jobs:
             -t "${REGISTRY}/${PROJECT}/${IMAGE_NAME}:${GITHUB_SHA}" \
             -t "${REGISTRY}/${PROJECT}/${IMAGE_NAME}:latest" \
             .
+
       - name: Push app image
         shell: bash
         run: |
           set -euo pipefail
           docker push "${REGISTRY}/${PROJECT}/${IMAGE_NAME}:${GITHUB_SHA}"
           docker push "${REGISTRY}/${PROJECT}/${IMAGE_NAME}:latest"
+
       - name: Get app image digest
         id: image-digest
         shell: bash
@@ -125,6 +143,7 @@ jobs:
           DIGEST_REF="$(docker image inspect "${REGISTRY}/${PROJECT}/${IMAGE_NAME}:${GITHUB_SHA}" --format '{{index .RepoDigests 0}}')"
           echo "image_digest=${DIGEST_REF}" >> "$GITHUB_OUTPUT"
           echo "App digest: ${DIGEST_REF}"
+
       - name: Trigger CD pipeline (repository_dispatch)
         shell: bash
         run: |
