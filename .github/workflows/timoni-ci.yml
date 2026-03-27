@@ -121,12 +121,13 @@ jobs:
       # ✅ Fast Docker build
       - name: Build Docker image
         run: |
-          docker pull $REGISTRY/$PROJECT/$IMAGE_NAME:cache || true
+          docker pull $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache || true
           docker build \
             --cache-from=$REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache \
             -t $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:${GITHUB_SHA} \
             -t $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache \
-            -f argocd/plugin/Dockerfile .
+            -f argocd/plugin/Dockerfile \
+            argocd/plugin
 
       - name: Push Docker image
         run: |
