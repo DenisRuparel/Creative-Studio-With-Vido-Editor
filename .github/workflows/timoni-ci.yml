@@ -47,15 +47,19 @@ jobs:
       - name: Build plugin image
         if: steps.plugin-check.outputs.changed == 'true'
         run: |
+          docker pull $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache || true
           docker build \
-            -f argocd/plugin/Dockerfile \
+            --cache-from=$REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache \
             -t $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:${GITHUB_SHA} \
-            .
+            -t $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache \
+            -f argocd/plugin/Dockerfile \
+            argocd/plugin
 
       - name: Push plugin image
         if: steps.plugin-check.outputs.changed == 'true'
         run: |
           docker push $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:${GITHUB_SHA}
+          docker push $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache
 
       - name: Get plugin digest
         if: steps.plugin-check.outputs.changed == 'true'
@@ -91,26 +95,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ Cache dependencies (BIG speed boost)
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-          save-always: true
-
-      # ✅ Install deps
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
-
-      # ✅ Build app OUTSIDE Docker
-      - name: Build Next.js app
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          npm run build
-
       - name: Set image tag
         run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
 
@@ -119,16 +103,14 @@ jobs:
           echo "${{ secrets.HARBOR_PASSWORD }}" | docker login $REGISTRY \
             -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
-      # ✅ Fast Docker build
       - name: Build Docker image
         run: |
-          docker pull $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache || true
+          docker pull $REGISTRY/$PROJECT/$IMAGE_NAME:cache || true      
           docker build \
-            --cache-from=$REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache \
-            -t $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:${GITHUB_SHA} \
-            -t $REGISTRY/$PROJECT/$PLUGIN_IMAGE_NAME:cache \
-            -f argocd/plugin/Dockerfile \
-            argocd/plugin
+            --cache-from=$REGISTRY/$PROJECT/$IMAGE_NAME:cache \
+            -t $REGISTRY/$PROJECT/$IMAGE_NAME:${IMAGE_TAG} \
+            -t $REGISTRY/$PROJECT/$IMAGE_NAME:cache \
+            .
 
       - name: Push Docker image
         run: |
