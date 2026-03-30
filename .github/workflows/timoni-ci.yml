@@ -5,7 +5,7 @@ on:
     branches: master
 
 env:
-  REGISTRY: demo.goharbor.io
+  REGISTRY: 43.204.35.30
   PROJECT: creative-studio
   IMAGE_NAME: creative-studio
   PLUGIN_IMAGE_NAME: timoni-cmp
