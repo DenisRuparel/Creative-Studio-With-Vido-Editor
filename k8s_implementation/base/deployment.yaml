@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: creative-studio
 spec:
-  replicas: 2
+  replicas: 20
   selector:
     matchLabels:
       app: creative-studio
