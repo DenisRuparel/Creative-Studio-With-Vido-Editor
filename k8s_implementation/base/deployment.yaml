@@ -16,7 +16,7 @@ spec:
       #   - name: harbor-secret
       containers:
         - name: creative-studio
-          image: denisruparel28/creative-studio
+          # image: denisruparel28/creative-studio
           ports:
             - containerPort: 5000
 #          envFrom:
