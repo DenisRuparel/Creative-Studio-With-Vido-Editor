@@ -12,11 +12,11 @@ spec:
       labels:
         app: creative-studio
     spec:
-      imagePullSecrets:
-        - name: harbor-secret
+      # imagePullSecrets:
+      #   - name: harbor-secret
       containers:
         - name: creative-studio
-          image: demo.goharbor.io/creative-studio/creative-studio@sha256:eb6c829029d7d1634d61287b6d83eeb32f58998e6aad55cdeb198de27aef39e7
+          image: denisruparel28/creative-studio
           ports:
             - containerPort: 5000
 #          envFrom:
