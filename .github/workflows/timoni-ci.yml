@@ -5,7 +5,7 @@ on:
     branches: master
 
 env:
-  REGISTRY: 13.61.15.73
+  REGISTRY: 13.233.132.176
   PROJECT: creative-studio
   IMAGE_NAME: creative-studio
   # PLUGIN_IMAGE_NAME: timoni-cmp
