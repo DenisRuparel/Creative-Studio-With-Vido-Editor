@@ -8,4 +8,4 @@ export async function checkImageProcessing(url: string) {
     } catch (error) {
       return false
     }
-  }
+}
