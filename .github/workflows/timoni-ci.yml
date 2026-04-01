@@ -3,7 +3,7 @@ name: Creative Studio CI
 on:
   push:
     branches: master
-
+    
 env:
   REGISTRY: 13.233.247.153
   PROJECT: creative-studio
