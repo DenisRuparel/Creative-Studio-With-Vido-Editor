@@ -155,7 +155,7 @@ jobs:
             -d '{
               "event_type": "update-image",
               "client_payload": {
-                "image_digest": "'"${{ steps.image-digest.outputs.image_digest }}"'"
+                "image_digest": "'"${{ steps.image-digest.outputs.image_digest }}"'",
                 "registry": "'"${{ env.REGISTRY }}"'"
               }
             }'
