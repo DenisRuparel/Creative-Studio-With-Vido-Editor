@@ -8,7 +8,7 @@ on:
       - stage
 
 env:
-  REGISTRY: 43.205.228.58
+  REGISTRY: 3.7.100.53
   IMAGE_NAME: creative-studio
 
 permissions:
