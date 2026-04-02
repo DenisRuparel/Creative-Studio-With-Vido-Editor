@@ -1,0 +1,113 @@
+name: Creative Studio CI
+
+on:
+  push:
+    branches:
+      - master
+      - beta
+      - stage
+
+env:
+  REGISTRY: 43.205.228.58
+  IMAGE_NAME: creative-studio
+
+permissions:
+  contents: write
+
+jobs:
+  build-app:
+    name: Build application image and trigger CD
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set environment variables based on branch
+        id: vars
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BRANCH="${GITHUB_REF_NAME}"
+
+          if [[ "$BRANCH" == "master" ]]; then
+            PROJECT="creative-studio-prod"
+            ENVIRONMENT="prod"
+          elif [[ "$BRANCH" == "beta" ]]; then
+            PROJECT="creative-studio-beta"
+            ENVIRONMENT="beta"
+          elif [[ "$BRANCH" == "stage" ]]; then
+            PROJECT="creative-studio-stage"
+            ENVIRONMENT="stage"
+          else
+            echo "Unsupported branch: $BRANCH"
+            exit 1
+          fi
+
+          echo "project=$PROJECT" >> $GITHUB_OUTPUT
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+
+      - name: Login to Harbor
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login "${{ env.REGISTRY }}" \
+            -u "${{ secrets.HARBOR_USERNAME }}" \
+            --password-stdin
+
+      - name: Build app image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECT="${{ steps.vars.outputs.project }}"
+
+          docker build \
+            -t "${{ env.REGISTRY }}/${PROJECT}/${{ env.IMAGE_NAME }}:${GITHUB_SHA}" \
+            -t "${{ env.REGISTRY }}/${PROJECT}/${{ env.IMAGE_NAME }}:latest" \
+            .
+
+      - name: Push app image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECT="${{ steps.vars.outputs.project }}"
+
+          docker push "${{ env.REGISTRY }}/${PROJECT}/${{ env.IMAGE_NAME }}:${GITHUB_SHA}"
+          docker push "${{ env.REGISTRY }}/${PROJECT}/${{ env.IMAGE_NAME }}:latest"
+
+      - name: Get app image digest
+        id: image-digest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECT="${{ steps.vars.outputs.project }}"
+          IMAGE="${{ env.REGISTRY }}/${PROJECT}/${{ env.IMAGE_NAME }}:${GITHUB_SHA}"
+
+          docker pull "$IMAGE" >/dev/null
+
+          DIGEST_REF="$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}')"
+
+          echo "image_digest=${DIGEST_REF}" >> "$GITHUB_OUTPUT"
+          echo "App digest: ${DIGEST_REF}"
+
+      - name: Trigger CD pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl -fsSL -X POST \
+            "https://api.github.com/repos/DenisRuparel/ArgoCD-Plugin-With-Multiple-Branches---DevOps/dispatches" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
+            -d '{
+              "event_type": "update-image",
+              "client_payload": {
+                "image_digest": "'"${{ steps.image-digest.outputs.image_digest }}"'",
+                "registry": "'"${{ env.REGISTRY }}"'",
+                "environment": "'"${{ steps.vars.outputs.environment }}"'"
+              }
+            }'
